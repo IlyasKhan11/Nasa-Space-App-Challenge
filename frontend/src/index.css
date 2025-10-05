@@ -1,0 +1,144 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  
+  body {
+    @apply bg-space-dark text-white;
+  }
+}
+
+@layer components {
+  .nasa-gradient {
+    background: linear-gradient(135deg, #0B3D91 0%, #FC3D21 100%);
+  }
+  
+  .space-gradient {
+    background: linear-gradient(135deg, #0A0A0A 0%, #1A1A1A 50%, #0A0A0A 100%);
+  }
+  
+  .glass-effect {
+    @apply bg-white/10 backdrop-blur-md border border-white/20;
+  }
+  
+  .input-field {
+    @apply w-full px-4 py-3 bg-space-gray/50 border border-gray-600 rounded-lg 
+           text-white placeholder-gray-400 focus:outline-none focus:ring-2 
+           focus:ring-nasa-blue focus:border-transparent transition-all duration-200;
+  }
+  
+  .btn-primary {
+    @apply px-6 py-3 bg-nasa-blue hover:bg-blue-700 text-white font-semibold 
+           rounded-lg transition-all duration-200 transform hover:scale-105 
+           focus:outline-none focus:ring-2 focus:ring-nasa-blue focus:ring-offset-2 
+           focus:ring-offset-space-dark;
+  }
+  
+  .btn-secondary {
+    @apply px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-semibold 
+           rounded-lg transition-all duration-200 transform hover:scale-105 
+           focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 
+           focus:ring-offset-space-dark;
+  }
+  
+  .card {
+    @apply bg-space-gray/40 backdrop-blur-sm border border-gray-700 rounded-xl 
+           p-6 shadow-xl relative overflow-hidden;
+  }
+  
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent 30%, rgba(11, 61, 145, 0.1) 50%, transparent 70%);
+    pointer-events: none;
+    animation: shimmer 3s ease-in-out infinite;
+  }
+  
+  .prediction-card {
+    @apply card border-2 transition-all duration-300;
+  }
+  
+  .prediction-confirmed {
+    @apply border-green-500 bg-green-500/10;
+  }
+  
+  .prediction-candidate {
+    @apply border-yellow-500 bg-yellow-500/10;
+  }
+  
+  .prediction-false-positive {
+    @apply border-red-500 bg-red-500/10;
+  }
+}
+
+@layer utilities {
+  .text-shadow {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  }
+  
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  .animate-orbit {
+    animation: orbit 20s linear infinite;
+  }
+  
+  .animate-pulse-slow {
+    animation: pulse-slow 3s ease-in-out infinite;
+  }
+  
+  .animate-twinkle {
+    animation: twinkle 2s ease-in-out infinite alternate;
+  }
+  
+  .animate-drift {
+    animation: drift 15s ease-in-out infinite;
+  }
+  
+  .space-bg {
+    background: radial-gradient(ellipse at center, #1a1a2e 0%, #16213e 35%, #0f0f23 100%);
+  }
+  
+  .stars {
+    background-image: 
+      radial-gradient(2px 2px at 20px 30px, #eee, transparent),
+      radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.8), transparent),
+      radial-gradient(1px 1px at 90px 40px, #fff, transparent),
+      radial-gradient(1px 1px at 130px 80px, rgba(255,255,255,0.6), transparent),
+      radial-gradient(2px 2px at 160px 30px, #ddd, transparent);
+    background-repeat: repeat;
+    background-size: 200px 100px;
+    animation: twinkle 4s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes orbit {
+  0% { transform: rotate(0deg) translateX(50px) rotate(0deg); }
+  100% { transform: rotate(360deg) translateX(50px) rotate(-360deg); }
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.9; }
+  50% { opacity: 1; }
+}
+
+@keyframes drift {
+  0%, 100% { transform: translateX(0px) translateY(0px); }
+  25% { transform: translateX(10px) translateY(-5px); }
+  50% { transform: translateX(-5px) translateY(10px); }
+  75% { transform: translateX(5px) translateY(-3px); }
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
