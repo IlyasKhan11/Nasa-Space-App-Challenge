@@ -23,10 +23,10 @@ class PredictPipeline:
             skewed_columns = ['koi_prad', 'koi_depth', 'koi_teq', 'koi_insol', 'koi_model_snr']
             for col in skewed_columns:
                 if col in features.columns:
-                    features[col + '_log'] = np.log1p(features[col])
+                    features[col] = np.log1p(features[col])
             
             # Drop original skewed columns
-            features = features.drop(columns=skewed_columns, errors='ignore')
+            # features = features.drop(columns=skewed_columns, errors='ignore')
             
             # Transform features using preprocessor
             data_scaled = preprocessor.transform(features)

@@ -1,6 +1,0 @@
-[ 2025-10-03 13:27:25,371 ] 44 root - INFO - Entered the data ingestion method or component
-[ 2025-10-03 13:27:25,435 ] 22 root - INFO - Read the KOI dataset as dataframe
-[ 2025-10-03 13:27:25,435 ] 48 root - INFO - Dataset loaded with shape: (9564, 49)
-[ 2025-10-03 13:27:25,449 ] 38 root - INFO - Dataset info collected successfully
-[ 2025-10-03 13:27:25,742 ] 55 root - INFO - Raw data saved to: artifacts/data.csv
-[ 2025-10-03 13:27:25,742 ] 57 root - INFO - Data ingestion completed successfully

@@ -7,7 +7,7 @@ import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler, FunctionTransformer
+from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 
 from src.exception import CustomException
@@ -20,16 +20,20 @@ class DataTransformationConfig:
     train_data_path: str = os.path.join('artifacts', 'train.csv')
     test_data_path: str = os.path.join('artifacts', 'test.csv')
 
-# Define transformation functions at module level (not inside class methods)
-def log_transform(X):
-    """Log transformation function that can be pickled"""
-    return np.log1p(X)
-
 class DataTransformation:
     def __init__(self):
         self.data_transformation_config = DataTransformationConfig()
         # Create artifacts directory if it doesn't exist
         os.makedirs(os.path.dirname(self.data_transformation_config.train_data_path), exist_ok=True)
+        
+        # Define columns that need log transformation + scaling
+        self.log_transform_columns = ['koi_prad', 'koi_depth', 'koi_teq', 'koi_insol', 'koi_model_snr']
+        
+        # Columns that need only standard scaling (no log transformation)
+        self.standard_columns = ['koi_period', 'koi_duration', 'koi_steff', 'koi_slogg', 'koi_srad', 'koi_kepmag']
+        
+        # Binary flag columns
+        self.flag_columns = ['koi_fpflag_nt', 'koi_fpflag_ss', 'koi_fpflag_co', 'koi_fpflag_ec']
 
     def select_features(self, data):
         """
@@ -42,7 +46,7 @@ class DataTransformation:
                 'koi_slogg', 'koi_srad', 'koi_kepmag', 'koi_fpflag_nt',
                 'koi_fpflag_ss', 'koi_fpflag_co', 'koi_fpflag_ec',
                 'koi_disposition'
-            ]].copy()  # Use .copy() to avoid SettingWithCopyWarning
+            ]].copy()
             return features
         except Exception as e:
             raise CustomException(e, sys)
@@ -53,24 +57,18 @@ class DataTransformation:
         Creates separate pipelines for different column types
         '''
         try:
-            # Columns that need log transformation (skewed columns)
-            log_transform_columns = ['koi_prad', 'koi_depth', 'koi_teq', 'koi_insol', 'koi_model_snr']
-            
-            # Columns that need standard scaling (normally distributed)
-            standard_columns = ['koi_period', 'koi_duration', 'koi_steff', 'koi_slogg', 'koi_srad', 'koi_kepmag']
-            
-            # Binary flag columns
-            flag_columns = ['koi_fpflag_nt', 'koi_fpflag_ss', 'koi_fpflag_co', 'koi_fpflag_ec']
+            logging.info(f"Standard columns (scaling only): {self.standard_columns}")
+            logging.info(f"Log transformed columns (log + scaling): {self.log_transform_columns}")
+            logging.info(f"Flag columns: {self.flag_columns}")
 
-            # Pipeline for log transformed columns
-            log_pipeline = Pipeline([
+            # Pipeline for standard columns (scaling only)
+            standard_pipeline = Pipeline([
                 ('imputer', SimpleImputer(strategy='median')),
-                ('log_transform', FunctionTransformer(log_transform, validate=False)),
                 ('scaler', StandardScaler())
             ])
 
-            # Pipeline for standard columns
-            standard_pipeline = Pipeline([
+            # Pipeline for log-transformed columns (scaling only - log already applied)
+            log_transformed_pipeline = Pipeline([
                 ('imputer', SimpleImputer(strategy='median')),
                 ('scaler', StandardScaler())
             ])
@@ -81,14 +79,10 @@ class DataTransformation:
                 ('scaler', StandardScaler())
             ])
 
-            logging.info(f"Log transform columns: {log_transform_columns}")
-            logging.info(f"Standard columns: {standard_columns}")
-            logging.info(f"Flag columns: {flag_columns}")
-
             preprocessor = ColumnTransformer([
-                ('log_pipeline', log_pipeline, log_transform_columns),
-                ('standard_pipeline', standard_pipeline, standard_columns),
-                ('flag_pipeline', flag_pipeline, flag_columns)
+                ('standard_pipeline', standard_pipeline, self.standard_columns),
+                ('log_transformed_pipeline', log_transformed_pipeline, self.log_transform_columns),
+                ('flag_pipeline', flag_pipeline, self.flag_columns)
             ])
 
             return preprocessor
@@ -96,9 +90,24 @@ class DataTransformation:
         except Exception as e:
             raise CustomException(e, sys)
 
+    def apply_log_transformation(self, data, columns):
+        """
+        Apply log transformation to specified columns
+        """
+        try:
+            data_transformed = data.copy()
+            for col in columns:
+                if col in data_transformed.columns:
+                    # Add small epsilon to avoid log(0)
+                    data_transformed[col] = np.log1p(data_transformed[col])
+                    logging.info(f"Applied log transformation to column: {col}")
+            return data_transformed
+        except Exception as e:
+            raise CustomException(e, sys)
+
     def data_cleaning(self, data):
         """
-        Basic data cleaning - remove specific rows and handle missing values
+        Basic data cleaning - remove specific rows, handle missing values, and apply transformations
         """
         try:
             # Create a copy to avoid SettingWithCopyWarning
@@ -106,6 +115,9 @@ class DataTransformation:
             
             # Remove the specific row as in original code
             data_clean = data_clean[data_clean['koi_fpflag_nt'] != 465]
+            
+            # Apply log transformation to specified columns
+            data_clean = self.apply_log_transformation(data_clean, self.log_transform_columns)
             
             # Encode target variable
             data_clean['koi_disposition'] = data_clean['koi_disposition'].map({
@@ -131,8 +143,8 @@ class DataTransformation:
             logging.info("Selecting features")
             selected_df = self.select_features(raw_df)
             
-            # Data cleaning
-            logging.info("Cleaning data")
+            # Data cleaning (including log transformation)
+            logging.info("Cleaning data and applying transformations")
             cleaned_df = self.data_cleaning(selected_df)
             
             # Separate features and target
