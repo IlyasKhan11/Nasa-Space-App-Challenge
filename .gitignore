@@ -1,0 +1,14 @@
+# Virtual environments
+.venv/
+myenv/
+env/
+__pycache__/
+*.pyc
+
+# Data / models
+*.pkl
+*.h5
+*.csv
+*.npy
+*.npz
+*.joblib
